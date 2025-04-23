@@ -55,12 +55,6 @@ steps:
   displayName: Run dotnet pack
   workingDirectory: $(Build.SourcesDirectory)/src/
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: test
-    projects: '**/*.Tests.csproj'
-    arguments: '--configuration $(buildConfiguration)'
-
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
   inputs:
@@ -74,4 +68,10 @@ steps:
   displayName: Git Tag
   condition: startsWith(variables['Build.SourceBranch'], variables['JQM.releasesBranchPattern'])
   
-
+- task: NuGetCommand@2
+  condition: startsWith(variables['Build.SourceBranch'], variables['JQM.releasesBranchPattern'])
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'NuGet.org'

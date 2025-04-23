@@ -3,10 +3,10 @@
 NuGet version
 Sets the build number based on the following rules, where N = 1, 2, 3
 
-1.  If the build is for the  branch, set it to Major.Minor.Patch[.N]
-2.  If the build is for a releases/vMajor.Minor[-beta] branch, set it to vMajor.Minor[-beta][.N]
-3.  If the build is for a releases/* branch, throw an error
-4.  Otherwise, set it to 0.0.0-<branchname>[.N]
+1.  If the build is for a releases/vMajor.Minor[-beta] branch, set it to vMajor.Minor[-beta][.N]
+2.  If the build is for a releases/* branch, throw an error
+3.  If the build is for a pull request, set it to pr-<pullrequestnumber>[.N]
+4.  Otherwise, set it to 0.0.0-<branchname>[.N] (including the main branch)
 
 See https://www.jamesqmurphy.com/blog/2019/08/build-numbering to learn more.
 
