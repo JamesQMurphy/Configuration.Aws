@@ -1,0 +1,77 @@
+# azure-pipelines.yml
+trigger:
+- releases/v*
+
+pr:
+- main
+- releases/v*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  versionMajor: 0
+  versionMinor: 9
+  buildConfiguration: 'Release'
+  JQM.compareBranch: main
+  JQM.versionFile: build/azure-pipelines.yml
+  JQM.releasesBranchPattern: refs/heads/releases/v
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Install .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 8.0.204
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- checkout: self
+  clean: true
+  persistCredentials: true
+
+# - task: PowerShell@2
+#   displayName: Validate build against $(JQM.compareBranch) branch
+#   inputs:
+#     filePath: build/validate-build-against-branch.ps1
+#     arguments: -CompareBranch $(JQM.compareBranch) -VersionFile $(JQM.versionFile)
+
+- task: PowerShell@2
+  displayName: Set build number
+  env:
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    JQM_RELEASESBRANCHPATTERN: $(JQM.releasesBranchPattern)
+  inputs:
+    filePath: build/set-build-number.ps1
+
+- powershell: |
+    $bytesToWrite = [System.Convert]::FromBase64String($env:jamesqmurphy_snk)
+    Write-Output "Writing $($bytesToWrite.Length) bytes to jamesqmurphy.snk"
+    [System.IO.File]::WriteAllBytes('jamesqmurphy.snk', $bytesToWrite)
+  displayName: 'Writing jamesqmurphy.snk'
+  env:
+    jamesqmurphy_snk: $(jamesqmurphy_snk)
+
+- script: dotnet pack -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory) -p:version=$(Package.Version) -p:SignAssembly=true -p:AssemblyOriginatorKeyFile=$(Build.SourcesDirectory)/jamesqmurphy.snk
+  displayName: Run dotnet pack
+  workingDirectory: $(Build.SourcesDirectory)/src/
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: '**/*.Tests.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish build artifacts
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
+    artifactName: 'nugetPackages' 
+
+- script: |
+    git tag v$(Package.Version)
+    git push origin v$(Package.Version)
+  workingDirectory: $(Build.SourcesDirectory)
+  displayName: Git Tag
+  condition: startsWith(variables['Build.SourceBranch'], variables['JQM.releasesBranchPattern'])
+  
+

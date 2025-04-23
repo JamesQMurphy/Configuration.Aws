@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageProjectUrl>https://github.com/JamesQMurphy/Configuration.Aws</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Integrates with AWS Systems Manager (SSM) Parameter Store to retrieve configuration values and map them into the .NET Configuration system.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.7.404.18" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
