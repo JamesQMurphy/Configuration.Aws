@@ -19,23 +19,13 @@ Install the package via NuGet:
 
 ### Adding the Provider to Your Configuration
 
-To use this library, add the `SsmParameterStoreConfigurationSource` to your `IConfigurationBuilder`:
+This code shows how to add the SSM Parameter Store as a configuration source:
 
+    var builder = WebApplication.CreateBuilder(args);
 
-    using Amazon.SimpleSystemsManagement;
-    using Microsoft.Extensions.Configuration;
-    using JamesQMurphy.Configuration.Aws;
+    builder.Configuration.AddSsmParameterStore("/my-app/config/");
 
-    // Create an Amazon SSM client
-    var ssmClient = new AmazonSimpleSystemsManagementClient();
-
-    // Define the base path in the Parameter Store
-    string basePath = "/my-app/config/";
-    
-    // Add the SSM Parameter Store provider to the configuration
-    var configuration = new ConfigurationBuilder()
-        .Add(new SsmParameterStoreConfigurationSource(basePath, ssmClient))
-        .Build();
+    var app = builder.Build();
 
 
 
@@ -68,9 +58,7 @@ To use this library, the AWS IAM role or user associated with your application m
     {
       "Effect": "Allow",
       "Action": [
-        "ssm:GetParametersByPath",
-        "ssm:GetParameters",
-        "ssm:GetParameter"
+        "ssm:GetParametersByPath"
       ],
       "Resource": "arn:aws:ssm:<region>:<account-id>:parameter/<base-path>/*"
     }
